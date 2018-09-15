@@ -1,0 +1,4 @@
+en:
+  site_settings:
+    twitch_sidebar_title: "Enter the title of the Livestream block"
+    twitch_sidebar_user: "Enter a list of comma seperated Twitch User Names"

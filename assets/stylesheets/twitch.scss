@@ -1,0 +1,51 @@
+.twitch-container hr{
+  margin:.5em 0;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid darkgray;
+  border-bottom: 16px solid darkgray;
+  width: 50px;
+  height: 50px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.stream-container a{
+  color:white;
+}
+.streamer{
+  width:100%;
+
+  .streamer-wrapper{
+      border-bottom:1px solid lightgray;
+      margin-bottom:10px;
+      padding:10px;
+  }
+  .streamer-name{
+    width:80%;
+    float:left
+  }
+
+  .viewer-count{
+    width:20%;
+    float:left;
+    text-align: right;
+  }
+}
+
+.streamer:last-of-type .streamer-wrapper{
+  border-bottom:none;
+}

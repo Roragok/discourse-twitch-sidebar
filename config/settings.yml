@@ -1,0 +1,7 @@
+plugins:
+  twitch_sidebar_title:
+    client: true
+    default: "Live Streams"
+  twitch_sidebar_user:
+    client: true
+    default: "Roragok"
