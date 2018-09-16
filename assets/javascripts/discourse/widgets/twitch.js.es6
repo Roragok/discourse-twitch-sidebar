@@ -5,25 +5,28 @@ import { h } from 'virtual-dom';
 //  Create our widget named twitch
 export default createWidget('twitch', {
   tagName: 'div.twich-users.widget-container',
+  buildKey: () => 'twitch-users',
+
+  defaultState(){
+    return { rendered: 0 };
+  },
 
   //  Create and render the HTML to display the streambox.
-  html(){
+  html(attrs, state){
+
     // Output to be rendered
     var output = [];
 
-    // Get the title of the stream box.  IF for some reason it is unset use a default
-    //  Todo maybe remove else incase people do not want a title?
+    // Get the title of the stream box if set.
     if(this.siteSettings.twitch_sidebar_user){
       output.push(h('h2',this.siteSettings.twitch_sidebar_title));
-    }
-    else{
-      output.push(h('h2',"Live Streams"));
+
+      // Add an hr after the title
+      output.push(h('hr',""));
     }
 
-    // Add an hr after the title
-    output.push(h('hr',""));
 
-    // add a loadre div from w3 schools
+    // add a loader div from w3 schools
     // https://www.w3schools.com/howto/howto_css_loader.asp
     output.push(h('div.stream-container.loader',""));
 
@@ -57,16 +60,17 @@ export default createWidget('twitch', {
               // Build crappy html to render our items.
               //  I was hoping to push this to output, but it won't get added
               //  so we append the container with each streamer
-              $('.stream-container').append('<a class="streamer" target="_blank" href="https://twitch.tv/' + channel_name +'"><div class="streamer-wrapper clearfix"><div class="streamer-name">' + channel_name + '</div><div class="viewer-count">' + channel_viewers + '</div></div></a>');
+              if(!$('a.streamer.'+channel_name).length){
+                $('.stream-container').append('<a class="streamer '+channel_name + '" target="_blank" href="https://twitch.tv/' + channel_name +'"><div class="streamer-wrapper clearfix"><div class="streamer-name">' + channel_name + '</div><div class="viewer-count">' + channel_viewers + '</div></div></a>');
+              }
 
               // Remove shitty loader once we have an item
               $('div.loader').removeClass('loader');
             }
         });
       }
-
     }
 
-      return h('div.twitch-container',output);
-    }
+    return h('div.twitch-container',output);
+  }
 });
