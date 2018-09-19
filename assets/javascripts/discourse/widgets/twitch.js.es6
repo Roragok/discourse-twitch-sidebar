@@ -41,6 +41,8 @@ export default createWidget('twitch', {
       // initialize counter
       var counter= 0;
 
+      var streamers = [];
+
       // Iterate through the list of names and query twitch api
       // TODO HANDLE NO ITEMS AT ALL ACTIVE
       for (counter = 0; counter < names_array.length; counter++){
@@ -61,13 +63,21 @@ export default createWidget('twitch', {
               //  I was hoping to push this to output, but it won't get added
               //  so we append the container with each streamer
               if(!$('a.streamer.'+channel_name).length){
-                $('.stream-container').append('<a class="streamer '+channel_name + '" target="_blank" href="https://twitch.tv/' + channel_name +'"><div class="streamer-wrapper clearfix"><div class="streamer-name">' + channel_name + '</div><div class="viewer-count">' + channel_viewers + '</div></div></a>');
+                streamers[channel_name] = channel_viewers;
+
               }
 
               // Remove shitty loader once we have an item
               $('div.loader').removeClass('loader');
             }
         });
+      }
+      console.log('yikes');
+      var streamer_name;
+      for (counter =0; counter<streamers.length;counter++){
+        streamer_name = Object.keys(streamers)[counter];
+        console.log(streamer_name);
+        $('.stream-container').append('<a class="streamer '+ streamer_name + '" target="_blank" href="https://twitch.tv/' + streamer_name +'"><div class="streamer-wrapper clearfix"><div class="streamer-name">' + streamer_name + '</div><div class="viewer-count">' + streamer[streamer_name] + '</div></div></a>');
       }
     }
 
