@@ -1,5 +1,8 @@
-.twitch-container hr{
-  margin:.5em 0;
+.twitch-container {
+  h2 { text-align: center; }
+  hr{
+    margin:.5em 0;
+  }
 }
 
 .loader {
@@ -50,18 +53,22 @@
   border-bottom:none;
 }
 
+.sidebar-container {
+  .sidebar-content {
 
+  }
+}
 
 .main-content.topic.has-sidebars {
 
   #topic-title {
     background: inherit;
-    }
+  }
 
   #suggested-topics {
     background: inherit;
     padding: 10px;
     border-radius: 4px;
     box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.4);
-    }
   }
+}
