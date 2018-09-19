@@ -26,9 +26,8 @@ export default createWidget('twitch', {
     }
 
 
-    // add a loader div from w3 schools
-    // https://www.w3schools.com/howto/howto_css_loader.asp
-    output.push(h('div.stream-container.loader',""));
+    // add a spinner.
+    output.push(h('div.stream-container.spinner',""));
 
     //  check if users are set
     if(this.siteSettings.twitch_sidebar_user){
@@ -66,8 +65,8 @@ export default createWidget('twitch', {
                 streamers[channel_name] = channel_viewers
               }
 
-              // Remove shitty loader once we have an item
-              $('div.loader').removeClass('loader');
+              // Remove spinner once we have an item
+              $('div.spinner').removeClass('spinner');
             }
         });
 
