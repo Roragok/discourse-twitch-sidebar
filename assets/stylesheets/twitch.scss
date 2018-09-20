@@ -38,16 +38,54 @@
   }
 }
 
-.main-content.topic.has-sidebars {
-
-  #topic-title {
-    background: inherit;
+//sidebar overrides -- slated
+.main-content.has-sidebars {
+  .container.posts {
+    border: 0;
+    background-color: inherit;
+    border-radius: 0;
   }
+  .post-stream {
+    .topic-post {
+      //its overriding border here on light, have to refactor light before continuing
+      border-left: initial;
+    }
+  }
+  .container.list-container {
+    //note bg-color line below, didnt check it but have to for dark
+    background-color: inherit;
+    border: 0;
+  }
+  .topic-list-bottom {
+    margin: 0;
+  }
+  &.topic {
+    #topic-title {
+      background: inherit;
+      border-radius: 0;
+      border: 0;
+      margin-bottom: inherit;
+      padding-top: inherit;
 
-  #suggested-topics {
-    background: inherit;
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+      .container {
+        padding: 0;
+      }
+    }
+    .posts-wrapper {
+      border-radius: 0;
+      border: 0;
+    }
+    .topic-status-info {
+      border-top: 0;
+    }
+    #suggested-topics {
+      background: inherit;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+      tbody {
+        border-top:0;
+      }
+    }
   }
 }
