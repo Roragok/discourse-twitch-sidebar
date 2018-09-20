@@ -30,20 +30,24 @@ export default createWidget('twitch', {
 
     //  check if users are set
     if(this.siteSettings.twitch_sidebar_user){
-      let finishedRequest = false
+
       // Get the list of users
       const names = this.siteSettings.twitch_sidebar_user;
 
       // split the names into an array of names
       const names_array = names.split(",");
 
-      // initialize counter
+      // initialize vars
       let counter= 0;
-
       let streamers = {};
+      let finishedRequest = false
+
+      //random function to clean up code below, we can put this in some helper l8r
+      function countProperties(obj) {
+        return Object.keys(obj).length;
+      }
 
       // Iterate through the list of names and query twitch api
-      // TODO HANDLE NO ITEMS AT ALL ACTIVE
       for (counter = 0; counter < names_array.length; counter++){
 
         // Get the json data for each name in the array
@@ -57,12 +61,8 @@ export default createWidget('twitch', {
               // Viewer Count
               const channel_viewers = data.stream.viewers;
 
-              // Build crappy html to render our items.
-              //  I was hoping to push this to output, but it won't get added
-              //  so we append the container with each streamer
-              if(!$('a.streamer.'+channel_name).length > 0){
-                streamers[channel_name] = channel_viewers
-              }
+              streamers[channel_name] = channel_viewers
+
 
               // Remove spinner once we have an item
               $('div.spinner').removeClass('spinner');
@@ -77,26 +77,33 @@ export default createWidget('twitch', {
           request.done(function(){
             setTimeout(
               function(){
-            // sexy array sort
-            const streamerMap = new Map([...Object.entries(streamers)].sort(function(a,b){
-              return b[1] - a[1];
-            }))
+                // sexy array sort
+                const streamerMap = new Map([...Object.entries(streamers)].sort(function(a,b){
+                  return b[1] - a[1];
+                }))
 
-            //  If the map size is empty we have no items.  Remove Spinner and display empty text
-            if(streamerMap.size === 0 ){
-                $('div.spinner').removeClass('spinner');
-                $('.stream-container').html('<div class="no-streamer">No Active Streamers</div>');
-            }
-            // Add the items of the array to the streamer container
-            for(let [name, viewcount] of streamerMap){
-              $('.stream-container').append(`<a class="streamer ${name}" target="_blank" href="https://twitch.tv/${name}"><div class="streamer-wrapper clearfix"><div class="streamer-name">${name}</div><div class="viewer-count">${streamers[name]}</div></div></a>`);
-            }
-          }, 5)
+                //  If the map size is empty we have no items.  Remove Spinner and display empty text
+                if(countProperties(streamers) < 1 ){
+                    $('div.spinner').removeClass('spinner');
+                    $('.stream-container').html('<div class="no-streamer">No Active Streamers</div>');
+                }
+                // Add the items of the array to the streamer container
+                for(let [name, viewcount] of streamerMap){
+                  if(!$('a.streamer.'+name).length > 0){
+                    $('.stream-container').append(`<a class="streamer ${name}"
+                        target="_blank" href="https://twitch.tv/${name}">
+                          <div class="streamer-wrapper clearfix">
+                            <div class="streamer-name">${name}</div>
+                            <div class="viewer-count">${streamers[name]}</div>
+                          </div>
+                        </a>`);
+                }
+              }
+            }, 20)
           })
         }
       }
     }
-
-    return h('div.twitch-container',output);
+  return h('div.twitch-container',output);
   }
 });
