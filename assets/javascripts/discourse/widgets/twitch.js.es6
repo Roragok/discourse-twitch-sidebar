@@ -1,5 +1,4 @@
 import { createWidget } from 'discourse/widgets/widget';
-import ComponentConnector from 'discourse/widgets/component-connector';
 import { h } from 'virtual-dom';
 
 //  Create our widget named twitch
@@ -70,13 +69,25 @@ export default createWidget('twitch', {
             }
         });
 
+        //  I guess we only execute this on the last item of the for loop
+        //  Im sure promises are much better then this shit
         if(counter === (names_array.length - 1)){
+
+          // when the last request is done we can sort the array
           request.done(function(){
             setTimeout(
               function(){
+            // sexy array sort
             const streamerMap = new Map([...Object.entries(streamers)].sort(function(a,b){
               return b[1] - a[1];
             }))
+
+            //  If the map size is empty we have no items.  Remove Spinner and display empty text
+            if(streamerMap.size === 0 ){
+                $('div.spinner').removeClass('spinner');
+                $('.stream-container').html('<div class="no-streamer">No Active Streamers</div>');
+            }
+            // Add the items of the array to the streamer container
             for(let [name, viewcount] of streamerMap){
               $('.stream-container').append(`<a class="streamer ${name}" target="_blank" href="https://twitch.tv/${name}"><div class="streamer-wrapper clearfix"><div class="streamer-name">${name}</div><div class="viewer-count">${streamers[name]}</div></div></a>`);
             }
