@@ -27,15 +27,14 @@
     text-align: right;
   }
 }
-
-.streamer:last-of-type .streamer-wrapper{
-  border-bottom:none;
-}
-
 .sidebar-container {
   .sidebar-content {
 
   }
+}
+
+.streamer:last-of-type .streamer-wrapper{
+  border-bottom:none;
 }
 
 //sidebar overrides -- slated

@@ -1,6 +1,11 @@
 import { createWidget } from 'discourse/widgets/widget';
 import { h } from 'virtual-dom';
 
+//random function to clean up code below, we can put this in some helper l8r
+function countProperties(obj) {
+  return Object.keys(obj).length;
+}
+
 //  Create our widget named twitch
 export default createWidget('twitch', {
   tagName: 'div.twich-users.widget-container',
@@ -40,12 +45,7 @@ export default createWidget('twitch', {
       // initialize vars
       let counter= 0;
       let streamers = {};
-      let finishedRequest = false
-
-      //random function to clean up code below, we can put this in some helper l8r
-      function countProperties(obj) {
-        return Object.keys(obj).length;
-      }
+      let finishedRequest = false;
 
       // Iterate through the list of names and query twitch api
       for (counter = 0; counter < names_array.length; counter++){
@@ -61,7 +61,7 @@ export default createWidget('twitch', {
               // Viewer Count
               const channel_viewers = data.stream.viewers;
 
-              streamers[channel_name] = channel_viewers
+              streamers[channel_name] = channel_viewers;
 
 
               // Remove spinner once we have an item
@@ -99,8 +99,8 @@ export default createWidget('twitch', {
                         </a>`);
                 }
               }
-            }, 20)
-          })
+            }, 20);
+          });
         }
       }
     }
