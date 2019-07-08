@@ -1,20 +1,23 @@
+@import 'theme_variables';
 .twitch-container {
   h2 { text-align: center; }
-  hr{
+  > hr{
     margin:.5em 0;
   }
 }
 
-.stream-container a{
-  color:inherit;
-}
+.stream-container{
+  hr {
+    margin: 0;
+  }
+  a {
+    color:inherit;
+  }
 .streamer{
   width:100%;
 
   .streamer-wrapper{
-      border-bottom:1px solid lightgray;
-      margin-bottom:10px;
-      padding:10px;
+      padding:12px 6px;
   }
   .streamer-name{
     width:80%;
@@ -32,11 +35,7 @@
 
   }
 }
-
-.streamer:last-of-type .streamer-wrapper{
-  border-bottom:none;
 }
-
 //sidebar overrides -- slated
 .main-content.has-sidebars {
   .container.posts {

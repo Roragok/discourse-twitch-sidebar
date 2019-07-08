@@ -25,8 +25,8 @@ export default createWidget('twitch', {
     if(this.siteSettings.twitch_sidebar_user){
       output.push(h('h2',this.siteSettings.twitch_sidebar_title));
 
-      // Add an hr after the title
-      output.push(h('hr',""));
+      // // Add an hr after the title
+      // output.push(h('hr',""));
     }
 
 
@@ -80,7 +80,7 @@ export default createWidget('twitch', {
                 // sexy array sort
                 const streamerMap = new Map([...Object.entries(streamers)].sort(function(a,b){
                   return b[1] - a[1];
-                }))
+                }));
 
                 //  If the map size is empty we have no items.  Remove Spinner and display empty text
                 if(countProperties(streamers) < 1 ){
@@ -90,7 +90,7 @@ export default createWidget('twitch', {
                 // Add the items of the array to the streamer container
                 for(let [name, viewcount] of streamerMap){
                   if(!$('a.streamer.'+name).length > 0){
-                    $('.stream-container').append(`<a class="streamer ${name}"
+                    $('.stream-container').append(`<hr/><a class="streamer ${name}"
                         target="_blank" href="https://twitch.tv/${name}">
                           <div class="streamer-wrapper clearfix">
                             <div class="streamer-name">${name}</div>
