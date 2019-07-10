@@ -1,4 +1,5 @@
 en:
   site_settings:
+    twitch_sidebar_enabled: "Enable twitch sidebar.  Doesn't Currently Do Anything Question Mark."
     twitch_sidebar_title: "Enter the title of the Livestream block"
     twitch_sidebar_user: "Enter a list of comma seperated Twitch User Names"
