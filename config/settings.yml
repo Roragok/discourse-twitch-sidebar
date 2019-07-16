@@ -1,7 +1,13 @@
 plugins:
+  twitch_sidebar_enabled:
+    default: true
+    client: true
   twitch_sidebar_title:
     client: true
     default: "Live Streams"
-  twitch_sidebar_user:
+  twitch_sidebar_featured_streamers:
     client: true
     default: "Roragok"
+  twitch_sidebar_streamers:
+    client: true
+    default: "Arteezy"

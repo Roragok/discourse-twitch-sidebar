@@ -1,4 +1,6 @@
 en:
   site_settings:
+    twitch_sidebar_enabled: "Enable the twitch sidebar?"
     twitch_sidebar_title: "Enter the title of the Livestream block"
-    twitch_sidebar_user: "Enter a list of comma seperated Twitch User Names"
+    twitch_sidebar_featured_streamers: "Enter a list of comma seperated Featured Twitch Streams"
+    twitch_sidebar_streamers: "Enter a list of comma seperated Twitch Streams"

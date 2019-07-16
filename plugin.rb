@@ -5,7 +5,7 @@
 # url: https://git.roragok.com/namafia/discourse-twitch-sidebar
 
 register_asset 'stylesheets/twitch.scss'
-enabled_site_setting :twitch_sidebar_user
+enabled_site_setting :twitch_sidebar_enabled
 
 DiscourseEvent.on(:layouts_ready) do
   DiscourseLayouts::WidgetHelper.add_widget('twitch')
