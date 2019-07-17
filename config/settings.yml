@@ -1,7 +1,7 @@
 plugins:
   twitch_sidebar_enabled:
-    default: true
     client: true
+    default: true
   twitch_sidebar_title:
     client: true
     default: "Live Streams"
