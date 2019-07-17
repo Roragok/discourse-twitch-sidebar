@@ -1,4 +1,5 @@
 @import 'theme_variables';
+
 .twitch-container {
   h2 { text-align: center; }
   > hr{
@@ -13,28 +14,27 @@
   a {
     color:inherit;
   }
-.streamer{
-  width:100%;
+  .streamer{
+    width:100%;
+    .streamer-wrapper{
+        padding:12px 6px;
+    }
+    .streamer-name{
+      width:80%;
+      float:left
+    }
 
-  .streamer-wrapper{
-      padding:12px 6px;
+    .viewer-count{
+      width:20%;
+      float:left;
+      text-align: right;
+    }
   }
-  .streamer-name{
-    width:80%;
-    float:left
+  .no-streamer {
+    width:100%;
+    padding: 8px 0px 2px;
+    text-align: center;
   }
-
-  .viewer-count{
-    width:20%;
-    float:left;
-    text-align: right;
-  }
-}
-.sidebar-container {
-  .sidebar-content {
-
-  }
-}
 }
 //sidebar overrides -- slated
 .main-content.has-sidebars {
@@ -44,7 +44,8 @@
     border-radius: 0;
   }
   .post-stream {
-    .topic-post {
+    .topic-post .topic-body{
+      border-top: 1px solid darken($secondary, 10%);
       //its overriding border here on light, have to refactor light before continuing
       border-left: initial;
     }
@@ -52,11 +53,13 @@
   .container.list-container {
     //note bg-color line below, didnt check it but have to for dark
     background-color: inherit;
-    border: 0;
+    // border: 0;
   }
   .topic-list-bottom {
     margin: 0;
   }
+  //Below is UNFINISHED. Do not enable the sidebar outside of the category pages
+  //until we've figured out how to totally overwrite or disable styling on topic.
   &.topic {
     #topic-title {
       background: inherit;
@@ -66,15 +69,15 @@
       padding-top: inherit;
 
       .container {
-        padding: 0;
+        // padding: 0;
       }
     }
     .posts-wrapper {
       border-radius: 0;
-      border: 0;
+      // border: 0;
     }
     .topic-status-info {
-      border-top: 0;
+      // border-top: 0;
     }
     #suggested-topics {
       background: inherit;
@@ -86,4 +89,12 @@
       }
     }
   }
+}
+
+.main-content.is-responsive {
+  width: 100% !important;
+  margin: 0 0 60px 0 !important;
+    .topic-post>.boxed>.row {
+      padding: initial;
+}
 }
