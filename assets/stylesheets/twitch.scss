@@ -16,6 +16,9 @@
   }
   .streamer{
     width:100%;
+    &.site-stream{
+      font-weight:700;
+    }
     .streamer-wrapper{
         padding:12px 6px;
     }

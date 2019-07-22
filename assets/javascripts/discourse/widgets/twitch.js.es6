@@ -11,6 +11,14 @@ const sortStreamers = (streamers) => {
       return b[1] - a[1];
     }));
 };
+const getSiteStreamData = () => {
+  return new Promise(function (resolve, reject){
+    $.getJSON(`https://stream.namafia.com/v1/states`, function(data){
+        resolve(data.repeat_to_local_nginx.type);
+    });
+  });
+};
+
 
 const getLiveStreamerData = (names) => {
   //returns a promise so we can use then statements below
@@ -36,11 +44,24 @@ const getLiveStreamerData = (names) => {
   });
 };
 
+//adds site stream to stream container. we real code duplicaters now
+const prependSiteStream = () => {
+  $('div.spinner').removeClass('spinner');
+  $('.stream-container').prepend(`<hr/><a class="streamer site-stream"
+          target="_blank" href="https://stream.namafia.com">
+            <div class="streamer-wrapper clearfix">
+              <div class="streamer-name">Site Stream</div>
+              <div class="viewer-count">1000+</div>
+            </div>
+      </a>`);
+}
+
+
 //add streamers to the stream container.
-const appendStreamers = (streamers) => {
+const appendStreamers = (streamers, className = "") => {
   for(let [name, viewcount] of streamers){
       $('div.spinner').removeClass('spinner');
-      $('.stream-container').append(`<hr/><a class="streamer ${name}"
+      $('.stream-container').append(`<hr/><a class="streamer ${name} ${className}"
           target="_blank" href="https://twitch.tv/${name}">
             <div class="streamer-wrapper clearfix">
               <div class="streamer-name">${name}</div>
@@ -76,6 +97,13 @@ export default createWidget('twitch', {
       // Get the list of users, set to empty if the setting is blank
       const featuredNames = this.siteSettings.twitch_sidebar_featured_streamers.split(",") || {};
       const otherNames = this.siteSettings.twitch_sidebar_streamers.split(",") || {};
+
+      //async check site stream and add to the top if its up
+      getSiteStreamData().then((streamStatus) => {
+        if(streamStatus === 'connected'){
+          prependSiteStream();
+        }
+      });
 
       //get featured Streamers and append them first
       getLiveStreamerData(featuredNames).then((featuredStreamers) => {
