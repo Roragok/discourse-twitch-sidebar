@@ -1,16 +1,18 @@
 import { createWidget } from 'discourse/widgets/widget';
 import { h } from 'virtual-dom';
 
+const removeSpinner = () => { $('.stream-container').removeClass('spinner'); };
+
+//remove streamers, dividers and add spinner again during clear
 const clearStreamers = () => {
   $('.stream-container').addClass('<div class="spinner"></div>');
   $('a.streamer,.stream-container > hr,.no-streamer').remove();
 };
 
-const removeSpinner = () => { $('.stream-container').removeClass('spinner'); };
-
 const getSiteStreamData = () => {
   return new Promise(function (resolve, reject){
     $.getJSON(`https://stream.namafia.com/v1/states`, function(data){
+        //resolve to true if the stream is live
         resolve(data.repeat_to_local_nginx.type === 'connected');
     });
   });
@@ -31,9 +33,10 @@ const getLiveStreamerData = (names) => {
   });
 };
 
+//sort streamers by viewers in descending order.
 const sortStreamers = (streamers, otherStreamers = []) => {
+  //if a second array was passed we add it here.
   const allStreamers = [...streamers, ...otherStreamers];
-  //Descending sort streamers by viewers
   function compare(a, b){ return b.viewer_count - a.viewer_count; }
   //converts to a set to remove any dupes
   const sorted = new Set(allStreamers.sort(compare));
@@ -54,25 +57,27 @@ const appendStreamers = (streamers, className = "") => {
   });
 };
 
+//after a small period we'll check if there are any appended streamers and append a message if there isnt any
 const checkStreamerCount = (length = 50) => {
-  setTimeout( function(){ if($("a.streamer").length < 1) {
-      removeSpinner();
+  setTimeout( function(){ if($("a.streamer").length < 1) {removeSpinner();
       $('.stream-container').append('<hr/><div class="no-streamer"><span>No Active Streamers</span></div>');
   }},length);
 };
 
+//splits names to array, filters empty names, then deletes spaces and joins it together with &user_login for twitch call
 const formatNames = (names = "") => {
-  //filters empty names, then deletes spaces and joins it together with &user_login for twitch call
   return names.split(",").filter(name => name.trim().length>0).map(name => name.trim());
 };
 
 const generateStreamers = (featuredNames,otherNames,additionalNames) => {
+  //if anime.namafia.com is live, we'll append it before we append the twitch streamers
   getSiteStreamData().then((siteStreamIsLive) => {if(siteStreamIsLive){
     appendStreamers([{ user_name: 'Site Stream', viewer_count: '1000+', title: 'The Official Site Stream'}],'site-stream');
   }});
+  //get featured Streamers, then other streamers, then additional if need be
   getLiveStreamerData(featuredNames)
-  //get featured Streamers and append them first
   .then((featuredStreamers) => { getLiveStreamerData(otherNames)
+  //we'll handle other streamers here but we'll append featured streamers first
   .then((otherStreamers) => { appendStreamers(featuredStreamers);
     //if additional names resort after getting them and then append
     if(additionalNames.length > 0){
@@ -81,6 +86,7 @@ const generateStreamers = (featuredNames,otherNames,additionalNames) => {
         checkStreamerCount(100);
     });}
     else{
+      //if no additional streamers just skip right to appending them
       appendStreamers(otherStreamers);
       checkStreamerCount(100);
     }
@@ -113,8 +119,8 @@ export default createWidget('twitch', {
 
       // Get the list of users, set to empty if the setting is blank
       const featuredNames = formatNames(this.siteSettings.twitch_sidebar_featured_streamers);
-      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers);
 
+      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers);
       let additionalNames = [];
       //if theres more than 100 users in other, divide it into 2 calls. MAX LIMIT OF OTHER IS NOW 200
       if(otherNames.length > 100){ additionalNames = otherNames.slice(100); otherNames = otherNames.slice(0,99); }
@@ -123,6 +129,7 @@ export default createWidget('twitch', {
       generateStreamers(featuredNames,otherNames,additionalNames);
       setTimeout( function(){
         $("h2#streams-title").attr("title","Click here to refresh!");
+        //on Sidebar Title click we regenerate Streamers
         document.getElementById('streams-title').addEventListener('click', () => {
           clearStreamers();
           generateStreamers(featuredNames,otherNames,additionalNames);
