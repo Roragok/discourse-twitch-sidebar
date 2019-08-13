@@ -5,8 +5,12 @@ const removeSpinner = () => { $('.stream-container').removeClass('spinner'); };
 
 //remove streamers, dividers and add spinner again during clear
 const clearStreamers = () => {
-  $('.stream-container').addClass('<div class="spinner"></div>');
-  $('a.streamer,.stream-container > hr,.no-streamer').remove();
+  return new Promise(function (resolve){
+    $('.stream-container > hr').remove();
+    $('a.streamer,.no-streamer').remove();
+    $('.stream-container').addClass('spinner');
+    setTimeout(() => { resolve('done'); },25);
+  });
 };
 
 const getSiteStreamData = () => {
@@ -47,7 +51,7 @@ const sortStreamers = (streamers, otherStreamers = []) => {
 const appendStreamers = (streamers, className = "") => {
   [...streamers].map(({user_name, viewer_count, title}) => {
     removeSpinner();
-    $('.stream-container').append(`<hr/><a class="streamer ${user_name} ${className}"
+    $('.stream-container').append(`<hr/><a class="streamer ${user_name} ${className} visible"
       target="_blank" alt="twitch stream" title="${title}" href="https://twitch.tv/${user_name}">
         <div class="streamer-wrapper clearfix">
           <div alt="${user_name}'s stream" class="streamer-name">${user_name}</div>
@@ -69,7 +73,7 @@ const formatNames = (names = "") => {
   return names.split(",").filter(name => name.trim().length>0).map(name => name.trim());
 };
 
-const generateStreamers = (featuredNames,otherNames,additionalNames) => {
+const generateStreamers = (featuredNames,otherNames,additionalNames=false) => {
   //if anime.namafia.com is live, we'll append it before we append the twitch streamers
   getSiteStreamData().then((siteStreamIsLive) => {if(siteStreamIsLive){
     appendStreamers([{ user_name: 'Site Stream', viewer_count: '1000+', title: 'The Official Site Stream'}],'site-stream');
@@ -78,19 +82,28 @@ const generateStreamers = (featuredNames,otherNames,additionalNames) => {
   getLiveStreamerData(featuredNames)
   .then((featuredStreamers) => { getLiveStreamerData(otherNames)
   //we'll handle other streamers here but we'll append featured streamers first
-  .then((otherStreamers) => { appendStreamers(featuredStreamers);
+  .then((otherStreamers) => {
     //if additional names resort after getting them and then append
-    if(additionalNames.length > 0){
-      getLiveStreamerData(additionalNames).then((additionalStreamers) => {
+    if(additionalNames){
+      getLiveStreamerData(additionalNames)
+      .then((additionalStreamers) => {
+        appendStreamers(featuredStreamers);
         appendStreamers(sortStreamers(otherStreamers,additionalStreamers));
         checkStreamerCount(100);
     });}
     else{
+      appendStreamers(featuredStreamers);
       //if no additional streamers just skip right to appending them
       appendStreamers(otherStreamers);
       checkStreamerCount(100);
     }
   });
+  });
+};
+
+const setupTwitchSidebar = (featuredNames,otherNames,additionalNames) => {
+  clearStreamers().then(()=>{
+    generateStreamers(featuredNames,otherNames,additionalNames);
   });
 };
 
@@ -119,22 +132,20 @@ export default createWidget('twitch', {
 
       // Get the list of users, set to empty if the setting is blank
       const featuredNames = formatNames(this.siteSettings.twitch_sidebar_featured_streamers);
-
-      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers);
-      let additionalNames = [];
-      //if theres more than 100 users in other, divide it into 2 calls. MAX LIMIT OF OTHER IS NOW 200
-      if(otherNames.length > 100){ additionalNames = otherNames.slice(100); otherNames = otherNames.slice(0,99); }
-
-      //refer to the function for more doc
+      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers) ; let additionalNames = false;
+      //if theres more than 100 (MAX 200!) users in other, move part of it to an additional list
+      if(otherNames.length > 100){
+        additionalNames = otherNames.slice(100);
+        otherNames = otherNames.slice(0,99);
+      }
       generateStreamers(featuredNames,otherNames,additionalNames);
       setTimeout( function(){
         $("h2#streams-title").attr("title","Click here to refresh!");
         //on Sidebar Title click we regenerate Streamers
         document.getElementById('streams-title').addEventListener('click', () => {
-          clearStreamers();
-          generateStreamers(featuredNames,otherNames,additionalNames);
+          setupTwitchSidebar(featuredNames,otherNames,additionalNames);
         });
-      },100);
+      },40);
   return h('div.twitch-container',output);
   }
 }
