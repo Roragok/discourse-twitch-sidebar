@@ -1,74 +1,110 @@
 import { createWidget } from 'discourse/widgets/widget';
 import { h } from 'virtual-dom';
 
-const sortStreamers = (streamers) => {
-    //if empty object ie {}
-    if(Object.keys(streamers).length === 0){
-      return [];
-    }
-    //Descending sort streamers by viewers
-    return new Map([...Object.entries(streamers)].sort(function(a,b){
-      return b[1] - a[1];
-    }));
-};
-const getSiteStreamData = () => {
-  return new Promise(function (resolve, reject){
-    $.getJSON(`https://stream.namafia.com/v1/states`, function(data){
-        resolve(data.repeat_to_local_nginx.type);
-    });
+const removeSpinner = () => { $('.stream-container').removeClass('spinner'); };
+
+//remove streamers, dividers and add spinner again during clear
+const clearStreamers = () => {
+  return new Promise(function (resolve){
+    $('.stream-container > hr').remove();
+    $('a.streamer,.no-streamer').remove();
+    $('.stream-container').addClass('spinner');
+    setTimeout(() => { resolve('done'); },25);
   });
 };
 
+const getSiteStreamData = () => {
+  return new Promise(function (resolve, reject){
+    $.getJSON(`https://stream.namafia.com/v1/states`, function(data){
+        //resolve to true if the stream is live
+        resolve(data.repeat_to_local_nginx.type === 'connected');
+    });
+  });
+};
 
 const getLiveStreamerData = (names) => {
   //returns a promise so we can use then statements below
   return new Promise(function (resolve, reject){
-    let streamers = {};
-    let queries = [];
-    names.map(name =>
-      queries.push($.getJSON(`https://api.twitch.tv/kraken/streams/${name.trim()}?client_id=jnyy96xyqfu0osastfovsclhlzsa7n`, function(data){
-        // If the stream is live
-        if(data.stream){
-
-          // Channel Name
-          const channel_name = data.stream.channel.display_name;
-          // Viewer Count
-          const channel_viewers = data.stream.viewers;
-          streamers[channel_name] = channel_viewers;
-        }
-    })));
-    //after all queries are done, resolve the promise with the streamers
-    Promise.all(queries).then(() => {
-      resolve(streamers);
+    fetch(`https://api.twitch.tv/helix/streams?user_login=${names.join('&user_login=')}`,{
+      headers: {'Client-ID': 'xih7xf82qwbnhx45y4gmrlzibuzcu6',},})
+    .then((response) => { return response.json(); })
+    .then((streamList) => {
+      if(streamList.data !== undefined) {
+        const liveStreamers = streamList.data.filter(stream => stream.type === 'live');
+        resolve(sortStreamers(liveStreamers));
+      }
     });
   });
 };
 
-//adds site stream to stream container. we real code duplicaters now
-const prependSiteStream = () => {
-  $('div.spinner').removeClass('spinner');
-  $('.stream-container').prepend(`<hr/><a class="streamer site-stream"
-          target="_blank" href="https://stream.namafia.com">
-            <div class="streamer-wrapper clearfix">
-              <div class="streamer-name">Site Stream</div>
-              <div class="viewer-count">1000+</div>
-            </div>
-      </a>`);
-}
+//sort streamers by viewers in descending order.
+const sortStreamers = (streamers, otherStreamers = []) => {
+  //if a second array was passed we add it here.
+  const allStreamers = [...streamers, ...otherStreamers];
+  function compare(a, b){ return b.viewer_count - a.viewer_count; }
+  //converts to a set to remove any dupes
+  const sorted = new Set(allStreamers.sort(compare));
+  return sorted;
+};
 
-
-//add streamers to the stream container.
+//appends streamers to the stream container.
 const appendStreamers = (streamers, className = "") => {
-  for(let [name, viewcount] of streamers){
-      $('div.spinner').removeClass('spinner');
-      $('.stream-container').append(`<hr/><a class="streamer ${name} ${className}"
-          target="_blank" href="https://twitch.tv/${name}">
-            <div class="streamer-wrapper clearfix">
-              <div class="streamer-name">${name}</div>
-              <div class="viewer-count">${viewcount}</div>
-            </div>
-      </a>`);
-}
+  [...streamers].map(({user_name, viewer_count, title}) => {
+    removeSpinner();
+    $('.stream-container').append(`<hr/><a class="streamer ${user_name} ${className} visible"
+      target="_blank" alt="twitch stream" title="${title}" href="https://twitch.tv/${user_name}">
+        <div class="streamer-wrapper clearfix">
+          <div alt="${user_name}'s stream" class="streamer-name">${user_name}</div>
+          <div alt="${viewer_count} viewers" class="viewer-count">${viewer_count}</div>
+        </div>
+    </a>`);
+  });
+};
+
+//after a small period we'll check if there are any appended streamers and append a message if there isnt any
+const checkStreamerCount = (length = 50) => {
+  setTimeout( function(){ if($("a.streamer").length < 1) {removeSpinner();
+      $('.stream-container').append('<hr/><div class="no-streamer"><span>No Active Streamers</span></div>');
+  }},length);
+};
+
+//splits names to array, filters empty names, then deletes spaces and joins it together with &user_login for twitch call
+const formatNames = (names = "") => {
+  return names.split(",").filter(name => name.trim().length>0).map(name => name.trim());
+};
+
+const generateStreamers = (featuredNames,otherNames,additionalNames=false) => {
+  //if anime.namafia.com is live, we'll append it before we append the twitch streamers
+  getSiteStreamData().then((siteStreamIsLive) => {if(siteStreamIsLive){
+    appendStreamers([{ user_name: 'Site Stream', viewer_count: '1000+', title: 'The Official Site Stream'}],'site-stream');
+  }});
+  //get featured Streamers, then other streamers, then additional if need be
+  getLiveStreamerData(featuredNames)
+  .then((featuredStreamers) => { getLiveStreamerData(otherNames)
+  //we'll handle other streamers here but we'll append featured streamers first
+  .then((otherStreamers) => {
+    //if additional names resort after getting them and then append
+    if(additionalNames){
+      getLiveStreamerData(additionalNames)
+      .then((additionalStreamers) => {
+        appendStreamers(featuredStreamers);
+        appendStreamers(sortStreamers(otherStreamers,additionalStreamers));
+        checkStreamerCount(100);
+    });}
+    else{
+      appendStreamers(featuredStreamers);
+      //if no additional streamers just skip right to appending them
+      appendStreamers(otherStreamers);
+      checkStreamerCount(100);
+    }
+  });
+  });
+};
+
+const setupTwitchSidebar = (featuredNames,otherNames,additionalNames) => {
+  clearStreamers().then(()=>{
+    generateStreamers(featuredNames,otherNames,additionalNames);
+  });
 };
 
 //  Create our widget named twitch
@@ -90,38 +126,27 @@ export default createWidget('twitch', {
     if(this.siteSettings.twitch_sidebar_enabled){
 
       // Get the title of the stream box if set.
-      output.push(h('h2',this.siteSettings.twitch_sidebar_title));
-
+      output.push(h('h2#streams-title',this.siteSettings.twitch_sidebar_title));
       // add a spinner for while we load
       output.push(h('div.stream-container.spinner',""));
+
       // Get the list of users, set to empty if the setting is blank
-      const featuredNames = this.siteSettings.twitch_sidebar_featured_streamers.split(",") || {};
-      const otherNames = this.siteSettings.twitch_sidebar_streamers.split(",") || {};
-
-      //async check site stream and add to the top if its up
-      getSiteStreamData().then((streamStatus) => {
-        if(streamStatus === 'connected'){
-          prependSiteStream();
-        }
-      });
-
-      //get featured Streamers and append them first
-      getLiveStreamerData(featuredNames).then((featuredStreamers) => {
-        //then get the unfeatured Streamers after
-        getLiveStreamerData(otherNames).then((otherStreamers) => {
-            //append and sort them both here. Featured /should/ be above otherStreamers.
-            appendStreamers(sortStreamers(featuredStreamers));
-            appendStreamers(sortStreamers(otherStreamers));
-            //Wait a teeny bit. then, if there were no streamers appended, let em know.
-            setTimeout(function(){
-              if($("a.streamer").length < 1) {
-                $('div.spinner').removeClass('spinner');
-                $('.stream-container').append('<hr/><div class="no-streamer"><span>No Active Streamers</span></div>');
-              }
-            },30);
+      const featuredNames = formatNames(this.siteSettings.twitch_sidebar_featured_streamers);
+      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers) ; let additionalNames = false;
+      //if theres more than 100 (MAX 200!) users in other, move part of it to an additional list
+      if(otherNames.length > 100){
+        additionalNames = otherNames.slice(100);
+        otherNames = otherNames.slice(0,99);
+      }
+      generateStreamers(featuredNames,otherNames,additionalNames);
+      setTimeout( function(){
+        $("h2#streams-title").attr("title","Click here to refresh!");
+        //on Sidebar Title click we regenerate Streamers
+        document.getElementById('streams-title').addEventListener('click', () => {
+          setupTwitchSidebar(featuredNames,otherNames,additionalNames);
         });
-      });
-    }
+      },40);
   return h('div.twitch-container',output);
   }
+}
 });
