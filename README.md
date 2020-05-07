@@ -8,9 +8,15 @@ It iterates through the list of users and displays them in a widget called 'twit
 
 It creates two plugin settings
 - Block Title - text field for the block title
-- Twitch Users - comma delimited set of twitch users to display
+- Twitch Streamers - comma delimited set of twitch users to display
+- Twitch Featured Streamers - This is a list of twitch users that will be "promoted" above the other twitch users if they are online.
+- Twitch Client ID - The client id of your app to authenticate
+- Twitch app token - The Oauth token for your app.
 
 ## Setup
-This plugin is dependent on the [layouts plugin](https://www.w3schools.com/howto/howto_css_loader.asp)
-Once both are installed, you simply need to add the widget 'twitch' to either the left or right sidebar.
-Then enter the list of twitch users to the user field.
+
+This plugin depends on the [layouts plugin](https://meta.discourse.org/t/custom-layouts-plugin/55208) for discourse. It can be placed into a region via layouts.
+
+Additionally you will need a twitch app client id and oauth twitch_sidebar_access_token
+
+https://dev.twitch.tv/docs/authentication/getting-tokens-oauth

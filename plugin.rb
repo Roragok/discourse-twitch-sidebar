@@ -1,6 +1,6 @@
 # name: discourse-twitch-sidebar
 # about: A twitch sidebar that works with discourse-layouts
-# version: 0.1
+# version: 1.0
 # authors: Roragok, epok
 # url: https://git.roragok.com/namafia/discourse-twitch-sidebar
 

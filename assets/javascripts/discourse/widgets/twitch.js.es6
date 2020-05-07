@@ -22,11 +22,14 @@ const getSiteStreamData = () => {
   });
 };
 
-const getLiveStreamerData = (names) => {
+const getLiveStreamerData = (names, clientId, accessToken) => {
   //returns a promise so we can use then statements below
   return new Promise(function (resolve, reject){
     fetch(`https://api.twitch.tv/helix/streams?user_login=${names.join('&user_login=')}`,{
-      headers: {'Client-ID': 'xih7xf82qwbnhx45y4gmrlzibuzcu6',},})
+      headers: {
+        'Client-ID': clientId,
+        'Authorization': 'Bearer '+ accessToken,
+      },})
     .then((response) => { return response.json(); })
     .then((streamList) => {
       if(streamList.data !== undefined) {
@@ -73,19 +76,19 @@ const formatNames = (names = "") => {
   return names.split(",").filter(name => name.trim().length>0).map(name => name.trim());
 };
 
-const generateStreamers = (featuredNames,otherNames,additionalNames=false) => {
+const generateStreamers = (featuredNames,otherNames,additionalNames=false,clientId,accessToken) => {
   //if anime.namafia.com is live, we'll append it before we append the twitch streamers
   getSiteStreamData().then((siteStreamIsLive) => {if(siteStreamIsLive){
     appendStreamers([{ user_name: 'Site Stream', viewer_count: '1000+', title: 'The Official Site Stream'}],'site-stream');
   }});
   //get featured Streamers, then other streamers, then additional if need be
-  getLiveStreamerData(featuredNames)
-  .then((featuredStreamers) => { getLiveStreamerData(otherNames)
+  getLiveStreamerData(featuredNames,clientId,accessToken)
+  .then((featuredStreamers) => { getLiveStreamerData(otherNames,clientId,accessToken)
   //we'll handle other streamers here but we'll append featured streamers first
   .then((otherStreamers) => {
     //if additional names resort after getting them and then append
     if(additionalNames){
-      getLiveStreamerData(additionalNames)
+      getLiveStreamerData(additionalNames,clientId,accessToken)
       .then((additionalStreamers) => {
         appendStreamers(featuredStreamers);
         appendStreamers(sortStreamers(otherStreamers,additionalStreamers));
@@ -130,6 +133,11 @@ export default createWidget('twitch', {
       // add a spinner for while we load
       output.push(h('div.stream-container.spinner',""));
 
+      // Twitch Client id
+      const clientId = this.siteSettings.twitch_sidebar_client_id;
+      // Twitch Access Token
+      const accessToken = this.siteSettings.twitch_sidebar_access_token;
+
       // Get the list of users, set to empty if the setting is blank
       const featuredNames = formatNames(this.siteSettings.twitch_sidebar_featured_streamers);
       let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers) ; let additionalNames = false;
@@ -138,7 +146,7 @@ export default createWidget('twitch', {
         additionalNames = otherNames.slice(100);
         otherNames = otherNames.slice(0,99);
       }
-      generateStreamers(featuredNames,otherNames,additionalNames);
+      generateStreamers(featuredNames,otherNames,additionalNames, clientId, accessToken);
       setTimeout( function(){
         $("h2#streams-title").attr("title","Click here to refresh!");
         //on Sidebar Title click we regenerate Streamers

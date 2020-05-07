@@ -4,3 +4,5 @@ en:
     twitch_sidebar_title: "Enter the title of the Livestream block"
     twitch_sidebar_featured_streamers: "Enter a list of comma seperated Featured Twitch Streams"
     twitch_sidebar_streamers: "Enter a list of comma seperated Twitch Streams"
+    twitch_sidebar_client_id: "Enter the client id for your twitch app"
+    twitch_sidebar_access_token: "Enter the access token for your app"

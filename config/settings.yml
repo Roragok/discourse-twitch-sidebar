@@ -11,3 +11,9 @@ plugins:
   twitch_sidebar_streamers:
     client: true
     default: "Arteezy"
+  twitch_sidebar_client_id:
+    client: true
+    default: ""
+  twitch_sidebar_access_token:
+    client: true
+    default: ""
