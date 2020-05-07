@@ -1,6 +1,17 @@
 import { createWidget } from 'discourse/widgets/widget';
 import { h } from 'virtual-dom';
 
+let layoutsError;
+let layouts;
+
+
+try {
+  layouts = requirejs('discourse/plugins/discourse-layouts/discourse/lib/layouts');
+} catch(error) {
+  layouts = { createLayoutsWidget: createWidget };
+  console.error(error);
+}
+
 const removeSpinner = () => { $('.stream-container').removeClass('spinner'); };
 
 //remove streamers, dividers and add spinner again during clear
@@ -111,7 +122,7 @@ const setupTwitchSidebar = (featuredNames,otherNames,additionalNames) => {
 };
 
 //  Create our widget named twitch
-export default createWidget('twitch', {
+export default layouts.createLayoutsWidget('twitch', {
   tagName: 'div.twich-users.widget-container',
   buildKey: () => 'twitch-users',
 
@@ -121,7 +132,6 @@ export default createWidget('twitch', {
 
   //  Create and render the HTML to display the streambox.
   html(attrs, state){
-
     // Output to be rendered
     let output = [];
 
