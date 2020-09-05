@@ -115,9 +115,9 @@ const generateStreamers = (featuredNames,otherNames,additionalNames=false,client
   });
 };
 
-const setupTwitchSidebar = (featuredNames,otherNames,additionalNames) => {
+const setupTwitchSidebar = (featuredNames,otherNames,additionalNames,clientId, accessToken) => {
   clearStreamers().then(()=>{
-    generateStreamers(featuredNames,otherNames,additionalNames);
+    generateStreamers(featuredNames,otherNames,additionalNames,clientId, accessToken);
   });
 };
 
@@ -161,7 +161,7 @@ export default layouts.createLayoutsWidget('twitch', {
         $("h2#streams-title").attr("title","Click here to refresh!");
         //on Sidebar Title click we regenerate Streamers
         document.getElementById('streams-title').addEventListener('click', () => {
-          setupTwitchSidebar(featuredNames,otherNames,additionalNames);
+          setupTwitchSidebar(featuredNames,otherNames,additionalNames, clientId, accessToken);
         });
       },40);
   return h('div.twitch-container',output);
