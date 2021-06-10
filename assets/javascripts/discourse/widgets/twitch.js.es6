@@ -1,9 +1,7 @@
 import { createWidget } from 'discourse/widgets/widget';
 import { h } from 'virtual-dom';
 
-let layoutsError;
 let layouts;
-
 
 try {
   layouts = requirejs('discourse/plugins/discourse-layouts/discourse/lib/layouts');
@@ -63,8 +61,9 @@ const sortStreamers = (streamers, otherStreamers = []) => {
 
 //appends streamers to the stream container.
 const appendStreamers = (streamers, className = "") => {
+  removeSpinner();
+  $('.stream-container').html('');
   [...streamers].map(({user_name, viewer_count, title}) => {
-    removeSpinner();
     $('.stream-container').append(`<hr/><a class="streamer ${user_name} ${className} visible"
       target="_blank" alt="twitch stream" title="${title}" href="https://twitch.tv/${user_name}">
         <div class="streamer-wrapper clearfix">
@@ -75,7 +74,9 @@ const appendStreamers = (streamers, className = "") => {
   });
 };
 
-//after a small period we'll check if there are any appended streamers and append a message if there isnt any
+// after a small period we'll check if there are any appended streamers and
+// append a message if there isnt any
+// What is this for? @epok
 const checkStreamerCount = (length = 50) => {
   setTimeout( function(){ if($("a.streamer").length < 1) {removeSpinner();
       $('.stream-container').append('<hr/><div class="no-streamer"><span>No Active Streamers</span></div>');
@@ -101,14 +102,13 @@ const generateStreamers = (featuredNames,otherNames,additionalNames=false,client
     if(additionalNames){
       getLiveStreamerData(additionalNames,clientId,accessToken)
       .then((additionalStreamers) => {
-        appendStreamers(featuredStreamers);
-        appendStreamers(sortStreamers(otherStreamers,additionalStreamers));
+        var merged = new Set([...featuredStreamers, ...sortStreamers(otherStreamers,additionalStreamers)])
+        appendStreamers(merged);
         checkStreamerCount(100);
     });}
     else{
-      appendStreamers(featuredStreamers);
-      //if no additional streamers just skip right to appending them
-      appendStreamers(otherStreamers);
+      var merged = new Set([...featuredStreamers, ...otherStreamers])
+      appendStreamers(merged);
       checkStreamerCount(100);
     }
   });
@@ -121,22 +121,16 @@ const setupTwitchSidebar = (featuredNames,otherNames,additionalNames,clientId, a
   });
 };
 
-//  Create our widget named twitch
-export default layouts.createLayoutsWidget('twitch', {
-  tagName: 'div.twich-users.widget-container',
-  buildKey: () => 'twitch-users',
+layouts.createLayoutsWidget('twitch', {
 
+  tagName: 'div.twich-users.widget-container',
   defaultState(){
-    return { rendered: 0 };
+   return { rendered: 0 };
   },
 
-  //  Create and render the HTML to display the streambox.
-  html(attrs, state){
-    // Output to be rendered
-    let output = [];
-
-    //  check if users are set
+  html(attrs, state) {
     if(this.siteSettings.twitch_sidebar_enabled){
+      let output = [];
 
       // Get the title of the stream box if set.
       output.push(h('h2#streams-title',this.siteSettings.twitch_sidebar_title));
@@ -150,13 +144,18 @@ export default layouts.createLayoutsWidget('twitch', {
 
       // Get the list of users, set to empty if the setting is blank
       const featuredNames = formatNames(this.siteSettings.twitch_sidebar_featured_streamers);
-      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers) ; let additionalNames = false;
-      //if theres more than 100 (MAX 200!) users in other, move part of it to an additional list
+      let otherNames = formatNames(this.siteSettings.twitch_sidebar_streamers) ;
+      let additionalNames = false;
+
+      // if theres more than 100 (MAX 200!) users in other, move part of it to
+      // an additional list ? why @epok?
       if(otherNames.length > 100){
         additionalNames = otherNames.slice(100);
         otherNames = otherNames.slice(0,99);
       }
+
       generateStreamers(featuredNames,otherNames,additionalNames, clientId, accessToken);
+
       setTimeout( function(){
         $("h2#streams-title").attr("title","Click here to refresh!");
         //on Sidebar Title click we regenerate Streamers
@@ -164,7 +163,9 @@ export default layouts.createLayoutsWidget('twitch', {
           setupTwitchSidebar(featuredNames,otherNames,additionalNames, clientId, accessToken);
         });
       },40);
-  return h('div.twitch-container',output);
+
+      // Output to be rendered
+      return h('div.twitch-container',output);
+    }
   }
-}
 });

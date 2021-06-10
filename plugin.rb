@@ -6,7 +6,3 @@
 
 register_asset 'stylesheets/twitch.scss'
 enabled_site_setting :twitch_sidebar_enabled
-
-DiscourseEvent.on(:layouts_ready) do
-  DiscourseLayouts::Widget.add('twitch')
-end
